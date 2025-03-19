@@ -1,0 +1,155 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["relationJoins"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+/// TODO 需把外键索引与prisma关联起来
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model user {
+  id                    Int            @id @default(autoincrement()) @db.UnsignedInt
+  username              String         @unique(map: "username") @db.VarChar(50)
+  nickname              String?        @default("番茄用户") @db.VarChar(50)
+  password              String         @db.Text
+  avatar                Json?
+  email                 String?        @db.VarChar(50)
+  mobile                String?        @db.VarChar(50)
+  status                User_status?   @default(Y)
+  ban_start             DateTime?      @db.DateTime(0)
+  ban_end               DateTime?      @db.DateTime(0)
+  is_active             User_is_active @default(Y)
+  create_time           DateTime       @db.DateTime(0)
+  update_time           DateTime       @db.DateTime(0)
+  article               article[]
+  comment_from_author   comment[]      @relation("comment_from_author")
+  comment_target_author comment[]      @relation("comment_target_author")
+  like_from_author      like[]         @relation("like_from_author")
+  like_target_author    like[]         @relation("like_target_author")
+
+  @@index([id], map: "id")
+}
+
+model article {
+  id               Int               @id @unique(map: "id") @default(autoincrement()) @db.UnsignedInt
+  title            String?           @db.VarChar(50)
+  content          String?           @db.LongText
+  author           Int               @db.UnsignedInt
+  category         Int
+  status           Article_status    @default(Test)
+  is_active        Article_is_active @default(Y)
+  create_time      DateTime          @db.DateTime(0)
+  update_time      DateTime          @db.DateTime(0)
+  user             user              @relation(fields: [author], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "news__user")
+  category_article category          @relation("article_category", fields: [category], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "news_news_category")
+  comment          comment[]
+  like             like[]
+
+  @@index([author], map: "news__user")
+  @@index([category], map: "news_news_category")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model category {
+  id               Int                @id @unique(map: "id") @default(autoincrement())
+  name             String             @db.VarChar(50)
+  is_active        Category_is_active @default(Y)
+  create_time      DateTime           @db.DateTime(0)
+  update_time      DateTime           @db.DateTime(0)
+  article_category article[]          @relation("article_category")
+}
+
+model comment {
+  id                         Int               @id @default(autoincrement())
+  content                    String            @db.LongText
+  from_author                Int               @db.UnsignedInt
+  target_author              Int               @db.UnsignedInt
+  father_comment_id          Int
+  news                       Int               @db.UnsignedInt
+  is_active                  Comment_is_active @default(Y)
+  create_time                DateTime          @db.DateTime(0)
+  update_time                DateTime          @db.DateTime(0)
+  article                    article           @relation(fields: [news], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "comment__news")
+  user_comment_from_author   user              @relation("comment_from_author", fields: [from_author], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "comment_from__user")
+  user_comment_target_author user              @relation("comment_target_author", fields: [target_author], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "comment_target__user")
+
+  @@unique([id, father_comment_id], map: "id")
+  @@index([news], map: "comment__news")
+  @@index([from_author], map: "comment_from__user")
+  @@index([target_author], map: "comment_target__user")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model like {
+  id                Int            @id @unique(map: "id") @default(autoincrement()) @db.UnsignedInt
+  from_author       Int            @db.UnsignedInt
+  target_author     Int            @db.UnsignedInt
+  news              Int            @db.UnsignedInt
+  is_active         Like_is_active @default(Y)
+  create_time       DateTime       @db.DateTime(0)
+  update_time       DateTime       @db.DateTime(0)
+  article           article        @relation(fields: [news], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_like_article")
+  like_from_author  user           @relation("like_from_author", fields: [from_author], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "like_from__user")
+  ike_target_author user           @relation("like_target_author", fields: [target_author], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "like_target__user")
+
+  @@index([news], map: "FK_like_article")
+  @@index([from_author], map: "like_from__user")
+  @@index([target_author], map: "like_target__user")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model role {
+  id          Int            @id @unique(map: "id") @default(autoincrement()) @db.UnsignedInt
+  name        String         @db.VarChar(50)
+  description String?        @db.VarChar(50)
+  auth_list   Json
+  is_active   Role_is_active @default(Y)
+  create_time DateTime       @db.DateTime(0)
+  update_time DateTime       @db.DateTime(0)
+}
+
+enum Category_is_active {
+  N @map("0")
+  Y @map("1")
+}
+
+enum Role_is_active {
+  N @map("0")
+  Y @map("1")
+}
+
+enum Like_is_active {
+  N @map("0")
+  Y @map("1")
+}
+
+enum Article_status {
+  Test    @map("0")
+  Check   @map("1")
+  Publish @map("2")
+  Fail    @map("3")
+}
+
+enum Article_is_active {
+  N @map("0")
+  Y @map("1")
+}
+
+enum Comment_is_active {
+  N @map("0")
+  Y @map("1")
+}
+
+enum User_status {
+  N @map("0")
+  Y @map("1")
+}
+
+enum User_is_active {
+  N @map("0")
+  Y @map("1")
+}
