@@ -55,7 +55,14 @@ router.get('/', async(req, res) => {
           mobile: true,
           avatar: true,
           create_time: true,
-          update_time: true
+          update_time: true,
+          article: {
+            select: {
+              id: true,
+              title: true,
+              content: true,
+            }
+          }
         },
         skip: Math.abs(parseInt(pagination.offset)),
         take: Math.abs(parseInt(pagination.limit)),

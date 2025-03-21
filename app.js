@@ -3,7 +3,9 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 require('dotenv',).config()
+const adminAuth = require('./middlewares/admin_auth');
 
+//后台管理系统路由
 var indexRouter = require('./routes/index');
 var adminArticlesRouter = require('./routes/admin/artcles');
 var adminCategoryRouter = require('./routes/admin/category');
@@ -13,7 +15,6 @@ var adminAuthRouter = require('./routes/admin/auth');
 
 
 var app = express();
-
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -21,52 +22,15 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/admin/articles', adminArticlesRouter);
-app.use('/admin/category', adminCategoryRouter);
-app.use('/admin/role', adminRoleRouter);
-app.use('/admin/user', adminUserRouter);
+
+//前端路由接口
+
+
+//后台管理路由接口
+app.use('/admin/articles', adminAuth, adminArticlesRouter);
+app.use('/admin/category', adminAuth, adminCategoryRouter);
+app.use('/admin/role', adminAuth, adminRoleRouter);
+app.use('/admin/user', adminAuth, adminUserRouter);
 app.use('/admin/auth', adminAuthRouter);
 
 module.exports = app;
-
-// const express = require('express');
-// const { PrismaClient } = require('@prisma/client');
-
-// const app = express();
-// const prisma = new PrismaClient();
-
-// // 解析 JSON 请求体
-// app.use(express.json());
-
-// // 创建用户
-// app.post('/users', async (req, res) => {
-//   const { name, mobile } = req.body;
-//   try {
-//     const user = await prisma.user.create({
-//       data: {
-//         name,
-//         mobile
-//       }
-//     });
-//     res.json(user);
-//   } catch (error) {
-//     res.status(500).json({ error: 'Failed to create user' });
-//   }
-// });
-
-// // 获取所有用户
-// app.get('/users', async (req, res) => {
-//   try {
-//     const users = await prisma.user.findMany();
-//     res.json(users);
-//   } catch (error) {
-//     res.status(500).json({ error: 'Failed to fetch users' });
-//   }
-// });
-
-// const port = process.env.PORT || 3010;
-// app.listen(port, () => {
-//   console.log(`Server is running on port ${port}`);
-// });
-
-// module.exports = app;

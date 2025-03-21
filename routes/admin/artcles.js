@@ -75,11 +75,11 @@ router.get('/', async(req, res) => {
 //获取文章详情
 router.get('/detail/:id', query('id').notEmpty(), async(req, res) => {
   try{
-    const validationData = validationResult(req)
-    console.log("打印validationData：", validationData)
-    if(validationData.errors.length > 0){
-      throw new Error('参数错误')
-    }
+    // const validationData = validationResult(req)
+    // console.log("打印validationData：", validationData)
+    // if(validationData.errors.length > 0){
+    //   throw new Error('参数错误')
+    // }
     const id = req.params.id
     console.log("请求数据：", req.params)
     const article  = await getArticleDetail(Math.abs(parseInt(id)))
