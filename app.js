@@ -1,25 +1,32 @@
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
 require('dotenv',).config()
 const adminAuth = require('./middlewares/admin_auth');
 
 //后台管理系统路由
-var indexRouter = require('./routes/index');
-var adminArticlesRouter = require('./routes/admin/artcles');
-var adminCategoryRouter = require('./routes/admin/category');
-var adminRoleRouter = require('./routes/admin/role');
-var adminUserRouter = require('./routes/admin/user');
-var adminAuthRouter = require('./routes/admin/auth');
+const indexRouter = require('./routes/index');
+const adminArticlesRouter = require('./routes/admin/artcles');
+const adminCategoryRouter = require('./routes/admin/category');
+const adminRoleRouter = require('./routes/admin/role');
+const adminUserRouter = require('./routes/admin/user');
+const adminAuthRouter = require('./routes/admin/auth');
+const cors = require('cors');
 
 
-var app = express();
+const app = express();
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+//CORS跨域配置，需要在其他路由上面
+const corsOptions = {
+    origin: 'http://127.0.0.1:5000'
+}
+app.use(cors(corsOptions))
 
 app.use('/', indexRouter);
 
