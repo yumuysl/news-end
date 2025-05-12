@@ -13,6 +13,9 @@ function connect(clientId, isRetry = false) {
     username: "momo", // 替换为你的用户名
     password: "123456Oo", // 替换为你的密码
     clientId: clientId, // 替换为你的客户端ID
+    protocolVersion: 5, // 明确指定 MQTT 5.0
+    clean: true,
+    sessionExpiryInterval: 0
   });
   return client;
 }
